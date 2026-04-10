@@ -113,11 +113,3 @@ Please see our [security policy](.github/SECURITY.md) for details about reportin
 [kubernetes]: https://kubernetes.io/docs/reference/access-authn-authz/authentication/#openid-connect-tokens
 [aws-sts]: https://docs.aws.amazon.com/STS/latest/APIReference/Welcome.html
 [release-notes]: https://github.com/dexidp/dex/releases
-
-## Contributing
-
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, guidelines, and how to submit pull requests.
-
-## License
-
-The project is licensed under the [Apache License, Version 2.0](LICENSE).

@@ -1,4 +1,4 @@
-# Active Directory and kubelogin Integration sample
+# Dex configuration / integrate Active Directory + kubelogin
 issuer: https://dex.example.com:32000/dex
 storage:
   type: sqlite3

@@ -1,6 +1,6 @@
-
 // GCResult returns the number of objects deleted by garbage collection.
-type GCResult struct {
+# `type GCResult struct {`
+
 	AuthRequests   int64
 	AuthCodes      int64
 	DeviceRequests int64
@@ -95,7 +95,8 @@ type Storage interface {
 // For further reading see:
 //   - Trusted peers: https://developers.google.com/identity/protocols/CrossClientAuth
 //   - Public clients: https://developers.google.com/api-client-library/python/auth/installed-app
-type Client struct {
+# `type Client struct {`
+
 	// Client ID and secret used to identify the client.
 	ID        string `json:"id"`
 	IDEnv     string `json:"idEnv"`
@@ -141,26 +142,28 @@ type Client struct {
 	SSOSharedWith []string `json:"ssoSharedWith" yaml:"ssoSharedWith"`
 }
 
-// Claims represents the ID Token claims supported by the server.
-type Claims struct {
-	UserID            string
-	Username          string
-	PreferredUsername string
-	Email             string
-	EmailVerified     bool
 
-	Groups []string
-}
+# `type Claims struct {`
+* == ID Token claims / supported -- by the -- server
+* ``UserID string``
+* ``Username string``
+* ``PreferredUsername string``
+* ``Email string``
+* ``EmailVerified bool``
+* ``Groups []string``
+
 
 // PKCE is a container for the data needed to perform Proof Key for Code Exchange (RFC 7636) auth flow
-type PKCE struct {
+# `type PKCE struct {`
+
 	CodeChallenge       string
 	CodeChallengeMethod string
 }
 
 // AuthRequest represents a OAuth2 client authorization request. It holds the state
 // of a single auth flow up to the point that the user authorizes the client.
-type AuthRequest struct {
+# `type AuthRequest struct {`
+
 	// ID used to identify the authorization request.
 	ID string
 
@@ -229,7 +232,8 @@ type AuthRequest struct {
 // This value is created once an end user has authorized a client, the server has
 // redirect the end user back to the client, but the client hasn't exchanged the
 // code for an access_token and id_token.
-type AuthCode struct {
+# `type AuthCode struct {`
+
 	// Actual string returned as the "code" value.
 	ID string
 
@@ -268,7 +272,8 @@ type AuthCode struct {
 
 // RefreshToken is an OAuth2 refresh token which allows a client to request new
 // tokens on the end user's behalf.
-type RefreshToken struct {
+# `type RefreshToken struct {`
+
 	ID string
 
 	// A single token that's rotated every time the refresh token is refreshed.
@@ -299,7 +304,8 @@ type RefreshToken struct {
 }
 
 // RefreshTokenRef is a reference object that contains metadata about refresh tokens.
-type RefreshTokenRef struct {
+# `type RefreshTokenRef struct {`
+
 	ID string
 
 	// Client the refresh token is valid for.
@@ -312,7 +318,8 @@ type RefreshTokenRef struct {
 // MFASecret stores the enrollment state and secret for an MFA authenticator.
 // Note: Secret is stored without encryption. Encrypting secrets at rest is the
 // responsibility of the storage backend (e.g., encrypted etcd, disk encryption).
-type MFASecret struct {
+# `type MFASecret struct {`
+
 	AuthenticatorID string    `json:"authenticatorID"`
 	Type            string    `json:"type"`
 	Secret          string    `json:"secret"`
@@ -321,7 +328,8 @@ type MFASecret struct {
 }
 
 // WebAuthnCredential stores a registered WebAuthn credential for a user.
-type WebAuthnCredential struct {
+# `type WebAuthnCredential struct {`
+
 	CredentialID    []byte    `json:"credentialID"`
 	PublicKey       []byte    `json:"publicKey"`
 	AttestationType string    `json:"attestationType"`
@@ -336,7 +344,8 @@ type WebAuthnCredential struct {
 }
 
 // UserIdentity represents persistent per-user identity data.
-type UserIdentity struct {
+# `type UserIdentity struct {`
+
 	UserID              string
 	ConnectorID         string
 	Claims              Claims
@@ -349,7 +358,8 @@ type UserIdentity struct {
 }
 
 // ClientAuthState represents authentication state for a specific client within an auth session.
-type ClientAuthState struct {
+# `type ClientAuthState struct {`
+
 	Active            bool
 	ExpiresAt         time.Time
 	LastActivity      time.Time
@@ -358,7 +368,8 @@ type ClientAuthState struct {
 
 // LogoutState holds RP parameters saved in the auth session during logout.
 // These are written before the upstream logout redirect and read back in the callback.
-type LogoutState struct {
+# `type LogoutState struct {`
+
 	PostLogoutRedirectURI string
 	State                 string // RP's opaque state parameter
 	ClientID              string
@@ -372,7 +383,8 @@ type LogoutState struct {
 // TODO(nabokihms): support multiple sessions in one browser by storing multiple
 // session references in the cookie (e.g. "ref1|ref2") so that different users
 // can maintain independent sessions in the same browser.
-type AuthSession struct {
+# `type AuthSession struct {`
+
 	UserID       string
 	ConnectorID  string
 	Nonce        string                      // random, included in cookie for verification
@@ -394,7 +406,8 @@ type AuthSession struct {
 }
 
 // OfflineSessions objects are sessions pertaining to users with refresh tokens.
-type OfflineSessions struct {
+# `type OfflineSessions struct {`
+
 	// UserID of an end user who has logged into the server.
 	UserID string
 
@@ -409,43 +422,44 @@ type OfflineSessions struct {
 	ConnectorData []byte
 }
 
-// Password is an email to password mapping managed by the storage.
-type Password struct {
-	// Email and identifying name of the password. Emails are assumed to be valid and
-	// determining that an end-user controls the address is left to an outside application.
-	//
-	// Emails are case insensitive and should be standardized by the storage.
-	//
-	// Storages that don't support an extended character set for IDs, such as '.' and '@'
-	// (cough cough, kubernetes), must map this value appropriately.
-	Email string `json:"email"`
 
-	// Bcrypt encoded hash of the password. This package enforces a min cost value of 10
-	Hash []byte `json:"hash"`
-
-	// Bcrypt encoded hash of the password set in environment variable of this name.
-	HashFromEnv string `json:"hashFromEnv"`
-
-	// Optional username to display. NOT used during login.
-	Username string `json:"username"`
-
-	// Optional full name for OIDC "name" claim.
-	// Defaults to Username when empty.
-	Name string `json:"name"`
-
-	// Optional preferred username for OIDC "preferred_username" claim.
-	PreferredUsername string `json:"preferredUsername"`
-
-	// Optional value for OIDC "email_verified" claim.
-	// Defaults to true for backwards compatibility when nil.
-	EmailVerified *bool `json:"emailVerified,omitempty"`
-
-	// Randomly generated user ID. This is NOT the primary ID of the Password object.
-	UserID string `json:"userID"`
-
-	// Groups assigned to the user
-	Groups []string `json:"groups"`
-}
+# `type Password struct {`
+* == 💡mapping email -- to -- password💡
+* ``Email string `json:"email"``
+  * == Password's name
+    * determine / end-user controls the address / left -- to an -- outside application
+  * case insensitive
+  * assumptions
+    * they are valid
+  * ⚠️if storages do NOT have extended char set support (_Example:_ Kubernetes) -> MANDATORY⚠️
+* ``Hash []byte `json:"hash"``
+  * == user's password's bcrypt encoded hash
+  * cost value >= 10
+* ``HashFromEnv string `json:"hashFromEnv"``
+  * == password's bcrypt encoded hash /
+    * set -- via -- environment variable
+* ``Username string `json:"username"``
+  * OPTIONAL
+  * displayed | user
+  * ❌NOT used | login❌
+* ``Name string `json:"name"``
+  * OPTIONAL
+  * == OIDC `name` claim
+    * by default,
+      * == `Username`
+* ``PreferredUsername string `json:"preferredUsername"``
+  * OPTIONAL
+  * == OIDC `preferred_username` claim
+* ``EmailVerified *bool `json:"emailVerified,omitempty"``
+  * OPTIONAL
+  * == OIDC `email_verified` claim
+    * by default,
+      * == `true`
+* ``UserID string `json:"userID"``
+  * randomly generated
+  * ❌!= Password object's primary ID ❌
+* ``Groups []string `json:"groups"``
+  * groups -- assigned to the -- user
 
 
 # `type Connector struct {`

@@ -56,22 +56,46 @@
 # `type OAuth2 struct {`
 * == enabled OAuth2 extensions
 * ``GrantTypes []string `json:"grantTypes"``
-  * == ALLOWED grant types
+  * == ALLOWED OAuth2 & OpenID Connect grant types
     * by default, ALL supported types
+
+
+| Grant Type                                        | Description                                                                                                                                                      | Special Configuration                                                                |
+|---------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| `authorization_code`                              | Authorization Code Flow <br/> uses <br/> &nbsp;&nbsp; web applications <br/> &nbsp;&nbsp; mobile applications                                                    | -                                                                                    |
+| `refresh_token`                                   | allows <br/> &nbsp;&nbsp; clients can obtain NEW access tokens -- WITHOUT -- user interaction                                                                    | -                                                                                    |
+| `password`                                        | Resource Owner Password Credentials Flow <br/> deprecated <br/> &nbsp;&nbsp; Reason:🧠LESS secure🧠                                                              | ⚠️requirements:⚠️ set `passwordConnector`                                            |
+| `client_credentials`                              | Client Credentials Flow <br/> uses: server-to-server communication                                                                                               | ⚠️requirements:⚠️ feature flag `DEX_CLIENT_CREDENTIAL_GRANT_ENABLED_BY_DEFAULT=true` |
+| `urn:ietf:params:oauth:grant-type:token-exchange` | Token Exchange Grant (RFC 8693)  <br/> allows <br/> &nbsp;&nbsp; clients can exchange tokens -- from -- EXTERNAL identity providers <br/> uses: OIDC connectors  | ⚠️requirements:⚠️ configure it ALSO \| `staticConnectors`                            |
+| `urn:ietf:params:oauth:grant-type:device_code`    | Device Code Grant (RFC 8628) <br/> uses: devices / limited input capabilities                                                                                    | ⚠️requirements:⚠️ configure it ALSO \| `staticConnectors`                            |
+
 * ``ResponseTypes []string `json:"responseTypes"``
+  * allows you to -- , based on DIFFERENT values, -- configure the desired auth flow
+
+| `responseTypes` value  | flow                    |
+|------------------------|-------------------------|
+| `code`                 | Authorization Code Flow |
+| `id_token`             | Implicit Flow           |
+| `id_token token`       | Implicit Flow           |
+| `code id_token`        | Hybrid Flow             |
+| `code token`           | Hybrid Flow             |
+| `code id_token token`  | Hybrid Flow             |
+
 * ``SkipApprovalScreen bool `json:"skipApprovalScreen"``
-  * if true -> logging == authorization
-    * == ❌NO approval prompt❌
+  * if
+    * true -> logging == authorization
+      * == ❌NO approval prompt❌
+    * false -> users MUST approve data sharing / EACH auth flow
+  * ❌if the request has the `approval_prompt=force` parameter -> this setting is NOT applicable❌
 * ``AlwaysShowLoginScreen bool `json:"alwaysShowLoginScreen"``
-  * if true -> show connector selection screen
-    * ALTHOUGH there's 1!
+  * if true -> display the login screen
+  * if there is 1! enabled authentication method & default behavior (== `false`) -> go DIRECTLY -- to -- it
 * ``PasswordConnector string `json:"passwordConnector"``
   * == connector
     * uses
       * password grant
 * ``PKCE PKCE `json:"pkce"``
   * == PKCE (Proof Key for Code Exchange) configuration
-
 
 # `type PKCE struct {`
 * == PKCE (Proof Key for Code Exchange) configuration
@@ -80,7 +104,6 @@
 * ``CodeChallengeMethodsSupported []string `json:"codeChallengeMethodsSupported"``
   * by default,
     * `["S256", "plain"]`
-
 
 # `type Web struct {`
 * == HTTP server's config format
@@ -94,7 +117,6 @@
 * ``AllowedOrigins []string `json:"allowedOrigins"``
 * ``AllowedHeaders []string `json:"allowedHeaders"``
 * ``ClientRemoteIP ClientRemoteIP `json:"clientRemoteIP"``
-
 
 # `type ClientRemoteIP struct {`
 * ``Header         string   `json:"header"``

@@ -60,14 +60,14 @@
     * by default, ALL supported types
 
 
-| Grant Type                                        | Description                                                                                                                                                      | Special Configuration                                                                |
-|---------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| `authorization_code`                              | Authorization Code Flow <br/> uses <br/> &nbsp;&nbsp; web applications <br/> &nbsp;&nbsp; mobile applications                                                    | -                                                                                    |
-| `refresh_token`                                   | allows <br/> &nbsp;&nbsp; clients can obtain NEW access tokens -- WITHOUT -- user interaction                                                                    | -                                                                                    |
-| `password`                                        | Resource Owner Password Credentials Flow <br/> deprecated <br/> &nbsp;&nbsp; Reason:🧠LESS secure🧠                                                              | ⚠️requirements:⚠️ set `passwordConnector`                                            |
-| `client_credentials`                              | Client Credentials Flow <br/> uses: server-to-server communication                                                                                               | ⚠️requirements:⚠️ feature flag `DEX_CLIENT_CREDENTIAL_GRANT_ENABLED_BY_DEFAULT=true` |
-| `urn:ietf:params:oauth:grant-type:token-exchange` | Token Exchange Grant (RFC 8693)  <br/> allows <br/> &nbsp;&nbsp; clients can exchange tokens -- from -- EXTERNAL identity providers <br/> uses: OIDC connectors  | ⚠️requirements:⚠️ configure it ALSO \| `staticConnectors`                            |
-| `urn:ietf:params:oauth:grant-type:device_code`    | Device Code Grant (RFC 8628) <br/> uses: devices / limited input capabilities                                                                                    | ⚠️requirements:⚠️ configure it ALSO \| `staticConnectors`                            |
+| Grant Type                                        | Description                                                                                                                                                                                                                                                                                                                                                                                       | Special Configuration                                                                |
+|---------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| `authorization_code`                              | Authorization Code Flow <br/> uses <br/> &nbsp;&nbsp; web applications <br/> &nbsp;&nbsp; mobile applications                                                                                                                                                                                                                                                                                     | -                                                                                    |
+| `refresh_token`                                   | allows <br/> &nbsp;&nbsp; clients can obtain NEW access tokens -- WITHOUT -- user interaction                                                                                                                                                                                                                                                                                                     | -                                                                                    |
+| `password`                                        | Resource Owner Password Credentials Flow <br/> == clients send DIRECTLY -- , to the authorization server (Dex), -- user's credentials (`username` & `password`) <br/> &nbsp;&nbsp; acquiring access tokens  <br/> ⚠️deprecated⚠️ <br/> &nbsp;&nbsp; Reason:🧠[OAuth 2.0 Security Best Current Practice](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics-13#section-3.4) 🧠 | ⚠️requirements:⚠️ set `passwordConnector`                                            |
+| `client_credentials`                              | Client Credentials Flow <br/> uses: server-to-server communication                                                                                                                                                                                                                                                                                                                                | ⚠️requirements:⚠️ feature flag `DEX_CLIENT_CREDENTIAL_GRANT_ENABLED_BY_DEFAULT=true` |
+| `urn:ietf:params:oauth:grant-type:token-exchange` | Token Exchange Grant (RFC 8693)  <br/> allows <br/> &nbsp;&nbsp; clients can exchange tokens -- from -- EXTERNAL identity providers <br/> uses: OIDC connectors                                                                                                                                                                                                                                   | ⚠️requirements:⚠️ configure it ALSO \| `staticConnectors`                            |
+| `urn:ietf:params:oauth:grant-type:device_code`    | Device Code Grant (RFC 8628) <br/> uses: devices / limited input capabilities                                                                                                                                                                                                                                                                                                                     | ⚠️requirements:⚠️ configure it ALSO \| `staticConnectors`                            |
 
 * ``ResponseTypes []string `json:"responseTypes"``
   * allows you to -- , based on DIFFERENT values, -- configure the desired auth flow
@@ -189,6 +189,9 @@
 # `type Signer struct {`
 * == app's signer configuration
 * ``Type   string       `json:"type"``
+  * ALLOWED types
+    * [local](../../server/signer/local.go)
+    *
 * ``Config SignerConfig `json:"config"``
 
 
@@ -213,14 +216,22 @@
 
 # `type Expiry struct {`
 * == validity period of components configuration
+  * duration format: number + time unit (s, m, h)
+    * _Example:_ 10m
 * ``SigningKeys string `json:"signingKeys"``
-  * == duration / AFTER it -> SigningKeys will be rotated
+  * == duration / AFTER it -> signingKeys will be rotated
+    * recommendation
+      * short
+  * if `IDTokens` is exceeded -> signing keys' public parts are kept for validation TILL `SigningKeys` expiration
 * ``IDTokens string `json:"idTokens"``
   * == duration | IdTokens will be valid
+    * recommendation
+      * short-lived
+        * _Example:_ 10m
 * ``AuthRequests string `json:"authRequests"``
-  * == duration | AuthRequests will be valid
+  * == duration | AuthRequests (== exchange a code -- for an -- access OR id token) will be valid
 * ``DeviceRequests string `json:"deviceRequests"``
-  * == duration | DeviceRequests will be valid
+  * == duration | DeviceRequests (== device can receive an access OR id token) will be valid
 * ``RefreshTokens RefreshToken `json:"refreshTokens"``
   * == refresh tokens expiry policy
 
@@ -240,9 +251,32 @@
 
 # `type RefreshToken struct {`
 * ``DisableRotation bool `json:"disableRotation"``
+  * if you want to keep refresh tokens secure -> specify
+    * `AbsoluteLifetime` OR
+    * `ValidIfNotUsedFor`
+  * pros
+    * help deal with
+      * network lags
+      * concurrent requests
+  * cons
+    * tradeoff for security
 * ``ReuseInterval string `json:"reuseInterval"``
+  * == interval /
+    * if the user's request contains the previous refresh token -> | refresh endpoint, get the SAME refresh token
+  * pros
+    * help deal with
+      * network lags
+      * concurrent requests
+  * cons
+    * tradeoff for security
 * ``AbsoluteLifetime string `json:"absoluteLifetime"``
+  * vs `ValidIfNotUsedFor`
+    * stricter
+  * force users to
+    * reauthenticate
+    * obtain a NEW refresh token
 * ``ValidIfNotUsedFor string `json:"validIfNotUsedFor"``
+  * if it is NOT used | specified amount of time -> invalidate a refresh token
 
 
 

@@ -54,7 +54,7 @@
     * by default, disabled
       * == ❌NOT ALLOW group claims❌
   * use cases
-    * | refresh the id token, ONLY refresh groups claims
+    * ONLY | refresh the id token, refresh groups claims
       * == ❌regular refresh flow does NOT update the groups claim❌
 * ``AllowedGroups        []string `json:"allowedGroups"``
   * allows
